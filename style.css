@@ -1,6 +1,15 @@
 
 /* Sarupya Ojha - CSE 230 Image Slider Assignment */
-/* ---------- Base ---------- */
+/* ---------- Tokens ---------- */
+:root {
+    --bg: #0e1320;
+    --panel: #161d2e;
+    --ink: #f4efe6;
+    --muted: #9aa3b5;
+    --accent: #f2b84b;
+    --radius: 18px;
+}
+
 *,
 *::before,
 *::after {
@@ -9,167 +18,272 @@
 
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #eef2f7;
-    color: #1f2d3d;
+    min-height: 100vh;
+    background: radial-gradient(120% 90% at 50% 0%, #1b2540 0%, var(--bg) 60%);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    line-height: 1.5;
 }
 
-.page {
-    width: min(92%, 900px);
-    margin: 40px auto;
+/* ---------- Page ---------- */
+.stage {
+    width: min(92%, 960px);
+    margin: 0 auto;
+    padding: 56px 0 64px;
 }
 
-.page h1 {
-    margin: 0 0 8px;
+.stage__head {
+    margin-bottom: 28px;
 }
 
-.page__intro {
-    margin: 0 0 24px;
-    color: #4a5b6d;
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
 }
 
-/* ---------- Slider component ---------- */
-.slider {
-    --slider-duration: 500ms;
-    --slider-accent: #243447;
+.stage h1 {
+    margin: 0 0 10px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+}
 
-    position: relative;          /* anchor for arrows and dots */
-    width: 100%;                 /* fluid: follows the parent footprint */
-    max-width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+.stage__lead {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--muted);
+}
+
+.stage__hint {
+    margin: 18px 0 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* ---------- Carousel ---------- */
+.carousel {
+    --speed: 650ms;
+    --ease: cubic-bezier(0.77, 0, 0.18, 1);
+    width: 100%;                       /* fluid: fills whatever parent it is placed in */
     outline: none;
 }
 
-.slider:focus-visible {
-    box-shadow: 0 0 0 3px #43a4b9;
+.carousel:focus-visible .carousel__window {
+    box-shadow: 0 0 0 3px var(--accent);
 }
 
-/* Viewport: the mask that hides every slide except the active one */
-.slider__viewport {
+/* The window masks everything except the visible slide */
+.carousel__window {
+    position: relative;                /* anchor for arrows and counter */
     overflow: hidden;
-    border-radius: inherit;
+    border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.7);
+    touch-action: pan-y;               /* vertical page scroll still works on touch */
 }
 
-/* Track: flex row that slides along the X axis.
-   Its width equals the viewport, so translateX(-100%) moves exactly one slide. */
-.slider__track {
+/* The rail is a flex row; translating it moves the slides along the X axis */
+.carousel__rail {
     display: flex;
     margin: 0;
     padding: 0;
     list-style: none;
-    transition: transform var(--slider-duration) cubic-bezier(0.65, 0, 0.35, 1);
-    will-change: transform;      /* hint for GPU compositing */
+    transition: transform var(--speed) var(--ease);
+    will-change: transform;
 }
 
-/* Used by JS to jump (loop reset) without animating */
-.slider__track.is-static {
+/* Used by slider.js to reposition without animating */
+.carousel__rail.is-instant {
     transition: none;
 }
 
-.slider__slide {
-    flex: 0 0 100%;              /* each slide fills the viewport */
+.carousel__item {
+    flex: 0 0 100%;                    /* one slide = one window width */
     aspect-ratio: 16 / 9;
 }
 
-.slider__slide img {
+.carousel__item figure {
+    position: relative;
+    height: 100%;
+    margin: 0;
+}
+
+.carousel__item img {
     display: block;
     width: 100%;
     max-width: 100%;
     height: 100%;
-    object-fit: cover;           /* no distortion, crisp cropping */
+    object-fit: cover;                 /* fills the frame, never distorts */
     user-select: none;
     -webkit-user-drag: none;
 }
 
+/* Caption over a soft gradient */
+.carousel__item figcaption {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 56px 28px 22px;
+    background: linear-gradient(to top, rgba(8, 11, 20, 0.85), rgba(8, 11, 20, 0));
+    pointer-events: none;
+}
+
+.carousel__item figcaption strong {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.35rem;
+}
+
+.carousel__item figcaption span {
+    color: #d5d9e3;
+    font-size: 0.92rem;
+}
+
+/* ---------- Counter ---------- */
+.carousel__count {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(14, 19, 32, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+}
+
 /* ---------- Arrows ---------- */
-.slider__btn {
+.carousel__btn {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     z-index: 2;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(36, 52, 71, 0.65);
-    color: #fff;
-    font-size: 1.5rem;
-    line-height: 1;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    background: rgba(14, 19, 32, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--ink);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transform: translateY(-50%);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.slider__btn:hover,
-.slider__btn:focus-visible {
-    background: rgba(36, 52, 71, 0.95);
+.carousel__btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-.slider__btn--prev {
-    left: 12px;
+.carousel__btn:hover,
+.carousel__btn:focus-visible {
+    background: var(--accent);
+    color: #1a1405;
+    border-color: var(--accent);
 }
 
-.slider__btn--next {
-    right: 12px;
+.carousel__btn:active {
+    transform: translateY(-50%) scale(0.94);
 }
 
-/* ---------- Indicator dots ---------- */
-.slider__dots {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 14px;
-    z-index: 2;
+.carousel__btn--prev {
+    left: 14px;
+}
+
+.carousel__btn--next {
+    right: 14px;
+}
+
+/* ---------- Dots (pills) ---------- */
+.carousel__dots {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 18px;
 }
 
-.slider__dot {
-    width: 12px;
-    height: 12px;
+.carousel__dot {
+    width: 10px;
+    height: 10px;
     padding: 0;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    background: transparent;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
     cursor: pointer;
-    transition: background-color 0.25s ease, transform 0.25s ease;
+    transition: width 0.35s ease, background-color 0.25s ease;
 }
 
-.slider__dot:hover {
-    transform: scale(1.2);
+.carousel__dot:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
-.slider__dot.is-active {
-    background: #fff;
-    transform: scale(1.25);
+.carousel__dot:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
 }
 
-/* ---------- Responsive tweaks ---------- */
-@media (max-width: 600px) {
-    .slider__btn {
-        width: 36px;
-        height: 36px;
-        font-size: 1.2rem;
+.carousel__dot.is-active {
+    width: 34px;
+    background: var(--accent);
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 640px) {
+    .stage {
+        padding-top: 36px;
     }
 
-    .slider__btn--prev {
-        left: 6px;
+    .carousel__item {
+        aspect-ratio: 4 / 3;
     }
 
-    .slider__btn--next {
-        right: 6px;
+    .carousel__btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
     }
 
-    .slider__dots {
-        bottom: 8px;
-        gap: 8px;
+    .carousel__btn--prev {
+        left: 8px;
+    }
+
+    .carousel__btn--next {
+        right: 8px;
+    }
+
+    .carousel__item figcaption {
+        padding: 40px 18px 16px;
+    }
+
+    .carousel__item figcaption strong {
+        font-size: 1.1rem;
+    }
+
+    .carousel__item figcaption span {
+        font-size: 0.85rem;
     }
 }
 
-/* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .slider {
-        --slider-duration: 0ms;
+    .carousel__dot {
+        transition: none;
     }
 }
